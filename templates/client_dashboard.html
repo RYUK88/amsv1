@@ -4,81 +4,103 @@
     <title>Client Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
-        body::before { content: ""; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20 20 Q 80 80 20 80" stroke="rgba(255, 215, 0, 0.2)" stroke-width="2"/></svg>'); position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+        body::before {
+            content: "";
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20 20 Q 80 80 20 80" stroke="rgba(255, 215, 0, 0.2)" stroke-width="2" fill="none"/></svg>') repeat;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.5;
+        }
     </style>
 </head>
 <body>
-    <h1>Client Dashboard - {{ username }}</h1>
-    <a href="{{ url_for('logout') }}">Logout</a>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <p class="message">{{ messages[0] }}</p>
-        {% endif %}
-    {% endwith %}
-    <div class="card">
-        <h2>Post New Project</h2>
-        <form method="POST" action="{{ url_for('post_project') }}" enctype="multipart/form-data">
-            <input type="text" name="title" placeholder="Project Title" required><br>
-            <textarea name="requirements" placeholder="Requirements" required></textarea><br>
-            <input type="text" name="location" placeholder="Location (optional)"><br>
-            <input type="date" name="deadline" placeholder="Deadline (optional)"><br>
-            <input type="text" name="budget" placeholder="Budget (optional)"><br>
-            <input type="file" name="images" accept="image/*" multiple><br>
-            <button type="submit">Post Project</button>
-        </form>
-    </div>
-    <div class="card">
-        <h2>Your Projects</h2>
-        {% for pid, project in projects.items() if project.client == username %}
-            <div class="project-card">
-                <strong>ID: {{ pid }} | {{ project.title }} ({{ project.status }})</strong><br>
-                {{ project.requirements }}<br>
-                Location: {{ project.location }}<br>
-                Deadline: {{ project.deadline }}<br>
-                Budget: {{ project.budget }}<br>
-                Posted: {{ project.timestamp }}<br>
-                {% if project.images %}
-                    <div class="gallery">
-                        {% for img in project.images %}
-                            <img src="{{ url_for('static', filename='uploads/' + img) }}" alt="Project Image">
+    <div class="container">
+        <h1>Client Dashboard - {{ username }}</h1>
+        <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <p class="message">{{ messages[0] }}</p>
+            {% endif %}
+        {% endwith %}
+        <div class="card">
+            <h2>Post New Project</h2>
+            <form method="POST" action="{{ url_for('post_project') }}" enctype="multipart/form-data">
+                <label for="title">Project Title</label>
+                <input type="text" id="title" name="title" placeholder="Project Title" required><br>
+                <label for="requirements">Requirements</label>
+                <textarea id="requirements" name="requirements" placeholder="Requirements" required></textarea><br>
+                <label for="location">Location</label>
+                <input type="text" id="location" name="location" placeholder="Location (optional)"><br>
+                <label for="deadline">Deadline</label>
+                <input type="date" id="deadline" name="deadline" placeholder="Deadline (optional)"><br>
+                <label for="budget">Budget</label>
+                <input type="text" id="budget" name="budget" placeholder="Budget (optional)"><br>
+                <label for="images">Upload Images</label>
+                <input type="file" id="images" name="images" accept="image/*" multiple><br>
+                <button type="submit">Post Project</button>
+            </form>
+        </div>
+        <div class="card">
+            <h2>Your Projects</h2>
+            {% for pid, project in projects.items() if project.client == username %}
+                <div class="project-card">
+                    <strong>ID: {{ pid }} | {{ project.title }} ({{ project.status }})</strong><br>
+                    <p>{{ project.requirements }}</p>
+                    <p>Location: {{ project.location }}</p>
+                    <p>Deadline: {{ project.deadline }}</p>
+                    <p>Budget: {{ project.budget }}</p>
+                    <p>Posted: {{ project.timestamp }}</p>
+                    {% if project.images %}
+                        <div class="gallery">
+                            {% for img in project.images %}
+                                <img src="{{ url_for('static', filename='uploads/' + img) }}" alt="Project Image">
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    {% if project.status == 'Open' %}
+                        <h3>Quotes:</h3>
+                        {% for qid, quote in quotes.items() if quote.project_id == pid %}
+                            <p>Artist: {{ quote.artist }} | Cost: {{ quote.cost }}</p>
+                            <form method="POST" action="{{ url_for('select_artist', project_id=pid) }}">
+                                <input type="hidden" name="artist" value="{{ quote.artist }}">
+                                <label for="milestones-{{ pid }}">Milestones (max 5, comma-separated)</label>
+                                <textarea id="milestones-{{ pid }}" name="milestones" placeholder="e.g., Sketch, Draft, Final" required></textarea><br>
+                                <button type="submit">Select Artist</button>
+                            </form>
                         {% endfor %}
-                    </div>
-                {% endif %}
-                {% if project.status == 'Open' %}
-                    <h3>Quotes:</h3>
-                    {% for qid, quote in quotes.items() if quote.project_id == pid %}
-                        Artist: {{ quote.artist }} | Cost: {{ quote.cost }}<br>
-                        <form method="POST" action="{{ url_for('select_artist', project_id=pid) }}">
-                            <input type="hidden" name="artist" value="{{ quote.artist }}">
-                            <textarea name="milestones" placeholder="Milestones (max 5, comma-separated)" required></textarea><br>
-                            <button type="submit">Select Artist</button>
+                    {% elif project.status == 'In Progress' and pid in agreements and agreements[pid].artist_accepted %}
+                        <h3>Agreement with {{ agreements[pid].artist }}</h3>
+                        <p>{{ agreements[pid].agreement_text }}</p>
+                        <a href="{{ url_for('chat', project_id=pid) }}">Chat with Artist</a><br>
+                        <p>Total: ${{ payments[pid].total }} | Released: ${{ payments[pid].released }}</p>
+                        <h4>Milestones:</h4>
+                        {% for m, status in agreements[pid].milestones.items() %}
+                            <p>{{ m }}: {{ status }}</p>
+                        {% endfor %}
+                        <form method="POST" action="{{ url_for('release_payment', project_id=pid) }}">
+                            <label for="amount-{{ pid }}">Amount to Release</label>
+                            <input type="text" id="amount-{{ pid }}" name="amount" placeholder="Amount" required><br>
+                            <button type="submit">Release Payment</button>
                         </form>
-                    {% endfor %}
-                {% elif project.status == 'In Progress' and pid in agreements and agreements[pid].artist_accepted %}
-                    <h3>Agreement with {{ agreements[pid].artist }}</h3>
-                    <p>{{ agreements[pid].agreement_text }}</p>
-                    <a href="{{ url_for('chat', project_id=pid) }}">Chat with Artist</a><br>
-                    Total: ${{ payments[pid].total }} | Released: ${{ payments[pid].released }}<br>
-                    Milestones:
-                    {% for m, status in agreements[pid].milestones.items() %}
-                        {{ m }}: {{ status }}<br>
-                    {% endfor %}
-                    <form method="POST" action="{{ url_for('release_payment', project_id=pid) }}">
-                        <input type="text" name="amount" placeholder="Amount to Release" required><br>
-                        <button type="submit">Release Payment</button>
-                    </form>
-                {% endif %}
-                <form method="POST" action="{{ url_for('edit_project', project_id=pid) }}">
-                    <button type="submit">Edit</button>
-                </form>
-                <form method="POST" action="{{ url_for('delete_project', project_id=pid) }}">
-                    <button type="submit">Delete</button>
-                </form>
-                <form method="POST" action="{{ url_for('flag_project', project_id=pid) }}">
-                    <button type="submit">Flag</button>
-                </form>
-            </div>
-        {% endfor %}
+                    {% endif %}
+                    <div class="project-actions">
+                        <form method="POST" action="{{ url_for('edit_project', project_id=pid) }}" style="display:inline;">
+                            <button type="submit">Edit</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('delete_project', project_id=pid) }}" style="display:inline;">
+                            <button type="submit">Delete</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('flag_project', project_id=pid) }}" style="display:inline;">
+                            <button type="submit">Flag</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
     </div>
 </body>
 </html>

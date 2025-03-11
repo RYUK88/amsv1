@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Client Dashboard</title>
+    <style>
+        body {
+            background: linear-gradient(to bottom right, #e4f5e9, #e8f5e9);
+            font-family: 'Arial', sans-serif;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #4caf50;
+            text-align: center;
+            font-size: 2.5em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        .section {
+            background: #fff;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #66bb6a;
+            border-bottom: 2px solid #c8e6c9;
+            padding-bottom: 5px;
+        }
+        form {
+            margin: 15px 0;
+        }
+        input, textarea, button {
+            margin: 8px 0;
+            padding: 10px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #c8e6c9;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        button {
+            background: #66bb6a;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #4caf50;
+        }
+        img {
+            max-width: 150px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        img:hover {
+            transform: scale(1.05);
+        }
+        .message {
+            color: #d81b60;
+            font-weight: bold;
+            text-align: center;
+        }
+        a {
+            color: #66bb6a;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Client Dashboard - {{ username }}</h1>
+    <div style="text-align: center;"><a href="{{ url_for('logout') }}">Logout</a></div>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <p class="message">{{ messages[0] }}</p>
+        {% endif %}
+    {% endwith %}
+    <div class="section">
+        <h2>Post New Project</h2>
+        <form method="POST" action="{{ url_for('post_project') }}" enctype="multipart/form-data">
+            <input type="text" name="title" placeholder="Project Title" required><br>
+            <textarea name="requirements" placeholder="Project Requirements" required></textarea><br>
+            <input type="file" name="image" accept="image/*"><br>
+            <button type="submit">Post Project</button>
+        </form>
+    </div>
+    <div class="section">
+        <h2>Your Projects</h2>
+        {% for pid, project in projects.items() if project.client == username %}
+            <div>
+                <strong>ID: {{ pid }} | {{ project.title }} ({{ project.status }})</strong><br>
+                {{ project.requirements }}<br>
+                {% if project.image %}
+                    <img src="{{ url_for('static', filename='uploads/' + project.image) }}" alt="Project Image"><br>
+                {% endif %}
+                {% if project.status == 'Open' %}
+                    <h3>Quotes:</h3>
+                    {% for qid, quote in quotes.items() if quote.project_id == pid %}
+                        Artist: {{ quote.artist }} | Cost: {{ quote.cost }}<br>
+                        Timeline: {{ quote.timeline }} | Medium: {{ quote.medium }}<br>
+                        Example Work: {{ quote.example_work }}<br>
+                        <form method="POST" action="{{ url_for('select_artist', project_id=pid) }}">
+                            <input type="hidden" name="artist" value="{{ quote.artist }}">
+                            <textarea name="milestones" placeholder="Milestones (e.g., Sketch, Draft, Final)" required></textarea><br>
+                            <button type="submit">Select Artist</button>
+                        </form>
+                    {% endfor %}
+                {% elif project.status == 'In Progress' %}
+                    <h3>Agreement with {{ agreements[pid].artist }}</h3>
+                    Total: ${{ payments[pid].total }} | Released: ${{ payments[pid].released }}<br>
+                    Milestones:
+                    {% for m, status in agreements[pid].milestones.items() %}
+                        {{ m }}: {{ status }}<br>
+                    {% endfor %}
+                    <form method="POST" action="{{ url_for('release_payment', project_id=pid) }}">
+                        <input type="text" name="amount" placeholder="Amount to Release" required><br>
+                        <button type="submit">Release Payment</button>
+                    </form>
+                {% endif %}
+            </div><hr>
+        {% endfor %}
+    </div>
+</body>
+</html>

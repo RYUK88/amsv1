@@ -1,0 +1,66 @@
+{
+    "users": {
+        "client": {
+            "password": "client123",
+            "type": "C"
+        },
+        "nishchal": {
+            "password": "12345",
+            "type": "C"
+        },
+        "Nishchal": {
+            "password": "12345",
+            "type": "C"
+        },
+        "ryuk": {
+            "password": "ryuk123",
+            "type": "A"
+        },
+        "bossman": {
+            "password": "bossman123",
+            "type": "C"
+        },
+        "raja": {
+            "password": "raja123",
+            "type": "A"
+        }
+    },
+    "projects": {
+        "1": {
+            "title": "the dreaming tree ",
+            "requirements": " a upside down realistic tree installation which is suspended from the celing.. the materials sude shoulld be light weight and weather friendly.. the texture of the tree should mimic an exact tree.. it should be hallow inside.. material can be of artist choice keeping in mind the weight constraints.. suggestions frp, foam , alluminium frame work",
+            "image": "WhatsApp_Image_2025-03-11_at_12.12.58.jpeg",
+            "client": "bossman",
+            "status": "In Progress"
+        }
+    },
+    "quotes": {
+        "1_ryuk": {
+            "project_id": "1",
+            "artist": "ryuk",
+            "timeline": "45days",
+            "medium": "frp with aluminium armature",
+            "cost": "200000",
+            "example_work": "frp casting "
+        }
+    },
+    "agreements": {
+        "1": {
+            "client": "bossman",
+            "artist": "ryuk",
+            "total_payment": "200000",
+            "milestones": {
+                "sketch basic and final": "Pending"
+            },
+            "status": "Signed"
+        }
+    },
+    "milestones": {},
+    "payments": {
+        "1": {
+            "total": "200000",
+            "released": "20000.0"
+        }
+    },
+    "portfolios": {}
+}

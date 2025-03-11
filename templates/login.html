@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <style>
+        body { background-color: #f0e4f5; font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+        h1 { color: #b19cd9; }
+        form { background-color: #fff; padding: 20px; border-radius: 10px; display: inline-block; }
+        input, button { margin: 10px; padding: 8px; width: 200px; }
+        button { background-color: #b19cd9; color: white; border: none; border-radius: 5px; }
+        .message { color: #ff9999; }
+    </style>
+</head>
+<body>
+    <h1>Login</h1>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <p class="message">{{ messages[0] }}</p>
+        {% endif %}
+    {% endwith %}
+    <form method="POST">
+        <input type="text" name="username" placeholder="Username" required><br>
+        <input type="password" name="password" placeholder="Password" required><br>
+        <button type="submit">Login</button>
+    </form>
+    <p><a href="{{ url_for('register') }}">Register</a></p>
+</body>
+</html>

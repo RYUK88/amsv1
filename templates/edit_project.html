@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Project</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body::before { content: ""; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M30 70 Q 70 30 30 70" stroke="rgba(0, 255, 127, 0.2)" stroke-width="2"/></svg>'); position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Edit Project - {{ project.title }}</h1>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <p class="message">{{ messages[0] }}</p>
+            {% endif %}
+        {% endwith %}
+        <form method="POST">
+            <input type="text" name="title" value="{{ project.title }}" required><br>
+            <textarea name="requirements" required>{{ project.requirements }}</textarea><br>
+            <input type="text" name="location" value="{{ project.location }}" placeholder="Location (optional)"><br>
+            <input type="date" name="deadline" value="{{ project.deadline }}" placeholder="Deadline (optional)"><br>
+            <input type="text" name="budget" value="{{ project.budget }}" placeholder="Budget (optional)"><br>
+            <button type="submit">Save Changes</button>
+        </form>
+        <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+    </div>
+</body>
+</html>

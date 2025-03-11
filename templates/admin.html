@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body::before { content: ""; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50 10 Q 90 50 50 90" stroke="rgba(255, 105, 180, 0.2)" stroke-width="2"/></svg>'); position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+    </style>
+</head>
+<body>
+    <h1>Admin Dashboard - {{ session['username'] }}</h1>
+    <a href="{{ url_for('logout') }}">Logout</a>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <p class="message">{{ messages[0] }}</p>
+        {% endif %}
+    {% endwith %}
+    <div class="card">
+        <h2>Delete Projects</h2>
+        <form method="POST">
+            <select name="delete_project">
+                <option value="">Select Project to Delete</option>
+                {% for pid in data['projects'].keys() %}
+                    <option value="{{ pid }}">{{ pid }} - {{ data['projects'][pid]['title'] }}</option>
+                {% endfor %}
+            </select><br>
+            <button type="submit">Delete</button>
+        </form>
+    </div>
+</body>
+</html>
